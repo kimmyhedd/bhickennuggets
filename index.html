@@ -66,16 +66,24 @@
       ['gesturestart','gesturechange','gestureend'].forEach(type=>{
         document.addEventListener(type, e=>e.preventDefault());
       });
-      // Defer Unity instantiation until DOM is ready so #gameContainer exists (Android fix)
       var gameInstance;
-      window.addEventListener('DOMContentLoaded', function(){
-        var container = document.getElementById('gameContainer');
+      function initUnity() {
+        if (gameInstance) return;
+        const container = document.getElementById('gameContainer');
         if (!container) {
-          console.warn('gameContainer missing at DOMContentLoaded');
+          // If container still not present, try again at DOMContentLoaded
+          window.addEventListener('DOMContentLoaded', initUnity, { once: true });
           return;
         }
         gameInstance = UnityLoader.instantiate('gameContainer', 'Build/SlopePlusWeb.json', { onProgress: UnityProgress });
-      });
+      }
+      const isAndroid = /android/i.test(navigator.userAgent);
+      if (isAndroid) {
+        window.addEventListener('DOMContentLoaded', initUnity, { once: true });
+      } else {
+        // Try immediate; fallback to DOMContentLoaded if container not yet there
+        initUnity();
+      }
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
