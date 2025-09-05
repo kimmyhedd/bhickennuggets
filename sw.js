@@ -124,22 +124,31 @@ self.addEventListener('fetch', evt => {
   }
 
   evt.respondWith((async () => {
-    await ensureVersion();
+    // Kick off version check asynchronously (don't block response)
+    ensureVersion();
 
+    // Try current active version cache if available
     if (activeVersion) {
       const cache = await caches.open(CACHE_PREFIX + activeVersion);
       const match = await cache.match(evt.request);
       if (match) return match;
     }
 
+    // Fallback network
     try {
       const net = await fetch(evt.request);
-      if (net.ok && activeVersion && ASSETS.some(a => evt.request.url.endsWith(a))) {
-        const cache = await caches.open(CACHE_PREFIX + activeVersion);
-        cache.put(evt.request, net.clone());
+      // After network succeeds, if we now have an activeVersion and asset is in list, cache it
+      if (net.ok) {
+        if (!activeVersion) {
+          // If version still unknown, we rely on later ensureVersion run to populate caches.
+        } else if (ASSETS.some(a => evt.request.url.endsWith(a))) {
+          const cache = await caches.open(CACHE_PREFIX + activeVersion);
+          cache.put(evt.request, net.clone());
+        }
       }
       return net;
     } catch (e) {
+      // Network failed: attempt any cached version (old/new)
       const names = await caches.keys();
       for (const n of names) {
         if (!n.startsWith(CACHE_PREFIX)) continue;
