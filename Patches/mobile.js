@@ -1,22 +1,38 @@
 const gameElement = document.getElementById('gameContainer');
 
+// Keep a persistent, off-screen input to summon Android/iOS soft keyboards
+const hiddenInput = document.getElementById('keyboard-input');
+if (hiddenInput) {
+    hiddenInput.setAttribute('autocomplete','off');
+    hiddenInput.setAttribute('autocorrect','off');
+    hiddenInput.setAttribute('autocapitalize','none');
+    hiddenInput.setAttribute('spellcheck','false');
+    hiddenInput.style.position = 'fixed';
+    hiddenInput.style.left = '-1000px';
+    hiddenInput.style.top = '0';
+    hiddenInput.style.width = '1px';
+    hiddenInput.style.height = '1px';
+    hiddenInput.style.opacity = '0';
+    hiddenInput.style.pointerEvents = 'auto'; // allow focusing
+}
 
-let leftWasPressed = false;
-let rightWasPressed = false;
-const leftTouches = new Set();
-const rightTouches = new Set();
-const keyMap = new Map();
-
-
+// Improved simulateKeyPress including key / code / keyCode for better Unity compatibility
 function simulateKeyPress(left, pressed) {
-    const keyCode = left ? 65 : 68;
-    const event = new KeyboardEvent(pressed ? 'keydown' : 'keyup', {
-        keyCode: keyCode,
-        view: window,
+    const keyCode = left ? 65 : 68; // A or D
+    const key = left ? 'a' : 'd';
+    const code = left ? 'KeyA' : 'KeyD';
+    const evtType = pressed ? 'keydown' : 'keyup';
+    const e = new KeyboardEvent(evtType, {
+        key,
+        code,
         bubbles: true,
-        cancelable: false
+        cancelable: true,
+        repeat: false
     });
-    window.dispatchEvent(event);
+    // Patch legacy properties keyCode / which expected by some engines
+    Object.defineProperty(e, 'keyCode', { get: () => keyCode });
+    Object.defineProperty(e, 'which', { get: () => keyCode });
+    window.dispatchEvent(e);
 }
 
 function isMobileDevice() {
@@ -45,38 +61,29 @@ window.addEventListener('resize', function() {
 });
 
 document.getElementById('keyboard-btn').addEventListener('click', function() {
-    var input = document.getElementById('keyboard-input');
-    
-    input.style.opacity = '0.01';
-    input.style.pointerEvents = 'auto';
-    input.style.position = 'fixed';
-    input.style.top = '50%';
-    input.style.left = '50%';
-    
-    if (document.activeElement === input) {
-
-        input.blur();
-        setTimeout(function() {
-        input.style.opacity = '0';
-        input.style.pointerEvents = 'none';
-        input.style.position = 'absolute';
-        input.style.top = '';
-        input.style.left = '';
-        }, 100);
-    } else {
-
-        input.value = '';
-        input.focus();
-
-        setTimeout(function() {
-        input.style.opacity = '0';
-        input.style.pointerEvents = 'none';
-        input.style.position = 'absolute';
-        input.style.top = '';
-        input.style.left = '';
-        }, 500);
-    }
+    if (!hiddenInput) return;
+    hiddenInput.value = '';
+    // Keep it off-screen but focusable; do NOT remove pointer-events or quickly blur.
+    hiddenInput.focus();
 });
+
+// Forward key events from the hidden input (some Android keyboards only fire on focused element)
+if (hiddenInput) {
+    hiddenInput.addEventListener('keydown', (e) => {
+        // Let the original bubble; some browsers already bubble. We still ensure keyCode presence.
+        // If engine needs additional synthesized event, only synthesize if keyCode is missing or zero.
+        if (!e.keyCode || e.keyCode === 229) { // 229 = composition
+            if (e.key === 'a' || e.key === 'A') simulateKeyPress(true, true);
+            if (e.key === 'd' || e.key === 'D') simulateKeyPress(false, true);
+        }
+    });
+    hiddenInput.addEventListener('keyup', (e) => {
+        if (!e.keyCode || e.keyCode === 229) {
+            if (e.key === 'a' || e.key === 'A') simulateKeyPress(true, false);
+            if (e.key === 'd' || e.key === 'D') simulateKeyPress(false, false);
+        }
+    });
+}
 
 function touchHandler(event) {
     let leftPressed = false;
