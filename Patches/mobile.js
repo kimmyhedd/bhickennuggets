@@ -32,6 +32,8 @@ function simulateKeyPress(left, pressed) {
     // Patch legacy properties keyCode / which expected by some engines
     Object.defineProperty(e, 'keyCode', { get: () => keyCode });
     Object.defineProperty(e, 'which', { get: () => keyCode });
+    // Mark as simulated to prevent re-entry loops
+    try { Object.defineProperty(e, '_simulated', { value: true }); } catch(_) { e._simulated = true; }
     window.dispatchEvent(e);
 }
 
