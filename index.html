@@ -62,19 +62,20 @@
     <script src="TemplateData/UnityProgress.js"></script>
     <script src="Build/UnityLoader.js"></script>
     <script>
-      document.addEventListener('gesturestart', function(e) {
-          e.preventDefault();
+      // Prevent pinch zoom / gesture events
+      ['gesturestart','gesturechange','gestureend'].forEach(type=>{
+        document.addEventListener(type, e=>e.preventDefault());
       });
-      
-      document.addEventListener('gesturechange', function(e) {
-          e.preventDefault();
+      // Defer Unity instantiation until DOM is ready so #gameContainer exists (Android fix)
+      var gameInstance;
+      window.addEventListener('DOMContentLoaded', function(){
+        var container = document.getElementById('gameContainer');
+        if (!container) {
+          console.warn('gameContainer missing at DOMContentLoaded');
+          return;
+        }
+        gameInstance = UnityLoader.instantiate('gameContainer', 'Build/SlopePlusWeb.json', { onProgress: UnityProgress });
       });
-      
-      document.addEventListener('gestureend', function(e) {
-          e.preventDefault();
-      });
-      var gameInstance = UnityLoader.instantiate("gameContainer", "Build/SlopePlusWeb.json", {onProgress: UnityProgress});
-      
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -183,8 +184,7 @@
       <button id="closeMenuBtn" class="close-btn">
         Close
       </button>
-    </div>
-    </script>
+  </div>
     <div id="popup" class="hidden">
         <span id="bold">Slope Plus, ported by lonfro</span>
         <a href="https://github.com/lonfro/SlopePlusWeb" target="_blank">
