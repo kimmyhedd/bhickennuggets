@@ -2,13 +2,54 @@
 <html lang="en-us">
   <head>
 
-    <meta property="og:title" content="Slope Plus Unblocked Game Online">
+    <meta property="og:title" content="Slope Plus Online">
     <meta property="og:description" content="Play Slope Plus unblocked, with no ads. Supports saving your progress!">
     <meta property="og:image" content="https://bbcd.me/home/icon.png">
     <meta property="og:url" content="https://bbcd.me/">
     <meta property="og:type" content="website">
 
+    // android
+    <meta name="mobile-web-app-capable" content="yes">
+    <script>
+      if ('serviceWorker' in navigator) {
+        // Register root SW so it controls / and can fetch /version.txt
+        navigator.serviceWorker.register('/sw.js').then(reg=>{
+          console.log('[page] SW registered scope=', reg.scope);
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({type:'FORCE_CHECK'});
+          } else {
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({type:'FORCE_CHECK'});
+              }
+            });
+          }
+        }).catch(e=>console.warn('SW reg failed',e));
+        navigator.serviceWorker.addEventListener('message', evt => {
+          if (!evt.data) return;
+          if (evt.data.type === 'VERSION_UPDATE') {
+            console.log('[page] VERSION_UPDATE new version =', evt.data.version);
+            setTimeout(()=>location.reload(),150);
+          } else if (evt.data.type === 'VERSION_INFO') {
+            console.log('[page] Active SW version =', evt.data.version);
+          }
+        });
+        window.requestSWVersion = () => {
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({type:'GET_VERSION'});
+          } else {
+            console.log('No SW controller yet.');
+          }
+        };
+      }
+    </script>
 
+
+    // ios
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Slope Mobile">
+    <link rel="apple-touch-icon" href="/PWA/icon.png">
 
 
     <link rel="canonical" href="https://bbcd.me/home/" />
