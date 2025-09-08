@@ -5,10 +5,18 @@ console.log('[SW] script start');
 
 const VERSION_FILE = '/version.txt';
 const CACHE_PREFIX = 'spw-v';
+// List of assets to precache per version. Keep only site/runtime required files (exclude large dev docs like README). 
+// NOTE: version.txt intentionally not cached with assets; it's fetched with no-cache to detect updates.
 const ASSETS = [
+  // Root shell
+  '/', // navigation fallback (will map to index.html when matched manually)
   '/index.html',
   '/style.css',
-  // Build
+  '/manifest.json',
+  '/icon.png',
+  '/sitemap.xml',
+
+  // Build (Unity)
   '/Build/SlopePlusWeb.asm.code.unityweb',
   '/Build/SlopePlusWeb.asm.framework.unityweb',
   '/Build/SlopePlusWeb.asm.memory.unityweb',
@@ -17,11 +25,13 @@ const ASSETS = [
   '/Build/SlopePlusWeb.wasm.code.unityweb',
   '/Build/SlopePlusWeb.wasm.framework.unityweb',
   '/Build/UnityLoader.js',
-  // Patches
+
+  // Patches / scripts
   '/Patches/mobile.js',
   '/Patches/settings.js',
   '/Patches/freezegame.js',
-  // TemplateData
+
+  // TemplateData assets
   '/TemplateData/style.css',
   '/TemplateData/UnityProgress.js',
   '/TemplateData/favicon.ico',
@@ -29,7 +39,29 @@ const ASSETS = [
   '/TemplateData/progressEmpty.Dark.png',
   '/TemplateData/progressFull.Dark.png',
   '/TemplateData/progressLogo.Dark.png',
-  '/TemplateData/webgl-logo.png'
+  '/TemplateData/webgl-logo.png',
+  '/TemplateData/download.svg',
+
+  // Home (secondary page + assets + fonts)
+  '/home/index.html',
+  '/home/style.css',
+  '/home/icon.png',
+  '/home/keyboard.png',
+  '/home/play.png',
+  '/home/wallpaper.png',
+  '/home/github-icon.png',
+  '/home/githubpushes.js',
+  '/home/Inter18pt-Medium.woff',
+  '/home/Inter18pt-Medium.woff2',
+  '/home/Inter18pt-Regular.woff',
+  '/home/Inter18pt-Regular.woff2',
+  '/home/medium.ttf',
+  '/home/regular.ttf',
+
+  // PWA icons (if used in manifest / shortcuts)
+  '/PWA/192.png',
+  '/PWA/512.png',
+  '/PWA/icon.png'
 ];
 
 let activeVersion = null;
@@ -120,6 +152,35 @@ self.addEventListener('fetch', evt => {
   // Always network for version.txt (ensures it shows in Network panel)
   if (url.pathname === VERSION_FILE) {
     evt.respondWith(fetch(evt.request, { cache: 'no-cache' }).catch(() => new Response(activeVersion || '', { status: 200 })));
+    return;
+  }
+
+  // Navigation requests (page loads / address bar / SPA fallbacks)
+  if (evt.request.mode === 'navigate' || url.pathname === '/' ) {
+    evt.respondWith((async () => {
+      // Fire version check in background
+      ensureVersion();
+      // Try current active version cache first
+      if (activeVersion) {
+        const cache = await caches.open(CACHE_PREFIX + activeVersion);
+        const cachedIndex = await cache.match('/index.html');
+        if (cachedIndex) return cachedIndex;
+      }
+      // Otherwise search any version cache
+      const names = await caches.keys();
+      for (const n of names) {
+        if (!n.startsWith(CACHE_PREFIX)) continue;
+        const cache = await caches.open(n);
+        const m = await cache.match('/index.html');
+        if (m) return m;
+      }
+      // As last resort try network (may fail offline)
+      try {
+        return await fetch(evt.request);
+      } catch (e) {
+        return new Response('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline</title><style>body{font-family:Arial;margin:40px;color:#222;text-align:center}</style></head><body><h1>Offline</h1><p>No cached content available.</p></body></html>', { status: 503, headers: { 'Content-Type': 'text/html' } });
+      }
+    })());
     return;
   }
 
