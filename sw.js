@@ -85,7 +85,13 @@ async function precache(version) {
   console.log('[SW] precache start version', version);
   const cache = await caches.open(CACHE_PREFIX + version);
   for (const a of ASSETS) {
-    try { await cache.add(a); } catch (e) { console.warn('[SW] miss', a, e); }
+    try {
+      const resp = await fetch(a, { cache: 'reload' }); // force bypass HTTP cache
+      if (!resp.ok) throw new Error('status ' + resp.status);
+      await cache.put(a, resp.clone());
+    } catch (e) {
+      console.warn('[SW] precache miss', a, e);
+    }
   }
   console.log('[SW] precache complete version', version);
 }
@@ -160,25 +166,68 @@ self.addEventListener('fetch', evt => {
     evt.respondWith((async () => {
       // Fire version check in background
       ensureVersion();
-      // Try current active version cache first
+      const reqPath = url.pathname;
+      // Determine candidate HTML files in order
+      const candidates = [];
+      if (reqPath !== '/' && /\.[a-zA-Z0-9]+$/.test(reqPath) === false) {
+        // Path without extension
+        if (reqPath.endsWith('/')) {
+          candidates.push(reqPath + 'index.html');
+        } else {
+          candidates.push(reqPath + '/index.html');
+        }
+      }
+      if (reqPath.endsWith('/')) {
+        candidates.push(reqPath + 'index.html');
+      }
+      // Direct path (in case it's already index.html or explicit file)
+      candidates.push(reqPath);
+      // Finally root index.html as app-shell fallback
+      if (!candidates.includes('/index.html')) candidates.push('/index.html');
+
+      // Attempt on-demand fetch & cache of first path-specific index if missing (improves offline after first hit)
+      if (activeVersion) {
+        const firstHtml = candidates.find(p => p.endsWith('/index.html') && p !== '/index.html');
+        if (firstHtml) {
+          const cache = await caches.open(CACHE_PREFIX + activeVersion);
+            const exists = await cache.match(firstHtml);
+            if (!exists) {
+              try {
+                const netResp = await fetch(firstHtml, { cache: 'no-cache' });
+                if (netResp.ok) {
+                  await cache.put(firstHtml, netResp.clone());
+                  console.log('[SW] cached page shell', firstHtml);
+                }
+              } catch (e) {
+                // ignore (likely offline)
+              }
+            }
+        }
+      }
+
+      // Try active version cache first for each candidate
       if (activeVersion) {
         const cache = await caches.open(CACHE_PREFIX + activeVersion);
-        const cachedIndex = await cache.match('/index.html');
-        if (cachedIndex) return cachedIndex;
+        for (const cPath of candidates) {
+          const hit = await cache.match(cPath);
+          if (hit) return hit;
+        }
       }
-      // Otherwise search any version cache
+      // Search other version caches
       const names = await caches.keys();
       for (const n of names) {
-        if (!n.startsWith(CACHE_PREFIX)) continue;
+        if (!n.startsWith(CACHE_PREFIX) || n === CACHE_PREFIX + activeVersion) continue;
         const cache = await caches.open(n);
-        const m = await cache.match('/index.html');
-        if (m) return m;
+        for (const cPath of candidates) {
+          const hit = await cache.match(cPath);
+          if (hit) return hit;
+        }
       }
-      // As last resort try network (may fail offline)
+      // As last resort network (online) or offline fallback page
       try {
         return await fetch(evt.request);
       } catch (e) {
-        return new Response('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline</title><style>body{font-family:Arial;margin:40px;color:#222;text-align:center}</style></head><body><h1>Offline</h1><p>No cached content available.</p></body></html>', { status: 503, headers: { 'Content-Type': 'text/html' } });
+        return new Response('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,Helvetica,sans-serif;margin:40px;color:#222;text-align:center;}h1{font-size:26px;margin-bottom:10px;}p{opacity:.75;}code{background:#f2f2f2;padding:2px 4px;border-radius:4px;}</style></head><body><h1>Offline</h1><p>The page <code>' + reqPath + '</code> is not cached.</p><p>Try again when you are back online.</p></body></html>', { status: 503, headers: { 'Content-Type': 'text/html' } });
       }
     })());
     return;
