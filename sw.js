@@ -58,6 +58,14 @@ const ASSETS = [
   '/home/medium.ttf',
   '/home/regular.ttf',
 
+  // i18n bundles and loader
+  '/Patches/i18n.js',
+  '/i18n/en.json',
+  '/i18n/zh-CN.json',
+  '/i18n/ja.json',
+  '/i18n/de.json',
+  '/i18n/es.json',
+
   // PWA icons (if used in manifest / shortcuts)
   '/PWA/192.png',
   '/PWA/512.png',
@@ -205,13 +213,19 @@ self.addEventListener('fetch', evt => {
         }
       }
 
-      // Try active version cache first for each candidate
+      // Try active version cache first for each candidate (when known)
       if (activeVersion) {
         const cache = await caches.open(CACHE_PREFIX + activeVersion);
         for (const cPath of candidates) {
           const hit = await cache.match(cPath);
           if (hit) return hit;
         }
+      } else {
+        // If version not yet known, prefer fresh network to avoid stale HTML, then fallback to caches
+        try {
+          const net = await fetch(evt.request, { cache: 'no-cache' });
+          if (net && net.ok) return net;
+        } catch(_) { /* offline or blocked */ }
       }
       // Search other version caches
       const names = await caches.keys();

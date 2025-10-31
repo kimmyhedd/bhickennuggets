@@ -54,7 +54,7 @@ body {
 }
 .launchpad {
     background: #fffffff3;
-    padding: 22px 20px 15px 20px;
+    padding: 22px 30px 15px 30px;
     border-radius: 25px;
     box-shadow: 0 4px 24px rgba(255, 255, 255, 0.728);
     text-align: center;
@@ -171,6 +171,8 @@ body {
 .footer-contact a:hover {
     color: #127a12;
 }
+
+/* (lang switcher removed; links remain in footer) */
 
 .changelog-line {
     display: flex;

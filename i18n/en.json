@@ -1,0 +1,29 @@
+{
+  "title": "Slope Plus Unblocked Game Online",
+  "tagline": "Play Slope Plus unblocked, with no ads.",
+  "worksOn": "Works on both desktop and mobile.",
+  "supports": "Supports saving your progress (like high-scores, but not replays), setting custom keybinds (left/right/hide game), and freezing on unfocus.",
+  "ctaPlay": "Play",
+  "footer": {
+    "findMe": "find me on github:"
+  },
+  "changelog": "Changelog:",
+  "root": {
+    "settings": {
+      "title": "Settings",
+      "left": "Left:",
+      "right": "Right:",
+      "hide": "Hide game:",
+      "menuKey": "Settings:",
+      "pause": "Pause on unfocus:",
+      "close": "Close"
+    },
+    "popup": {
+      "ported": "Slope Plus, ported by lonfro",
+      "github": "GitHub Repo",
+      "old": "Old Slope Mobile",
+      "press": "Press",
+      "forOptions": "for options"
+    }
+  }
+}

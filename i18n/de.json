@@ -1,0 +1,29 @@
+{
+  "title": "Slope Plus Online",
+  "tagline": "Spiele Slope Plus ohne Werbung.",
+  "worksOn": "Funktioniert auf Desktop und Mobilgerät.",
+  "supports": "Unterstützt das Speichern deines Fortschritts (z. B. Highscores, keine Replays), benutzerdefinierte Tasten (Links/Rechts/Spiel verstecken) und Pause bei Fokusverlust.",
+  "ctaPlay": "Spielen",
+  "footer": {
+    "findMe": "Finde mich auf GitHub:"
+  },
+  "changelog": "Änderungsprotokoll:",
+  "root": {
+    "settings": {
+      "title": "Einstellungen",
+      "left": "Links:",
+      "right": "Rechts:",
+      "hide": "Spiel ausblenden:",
+      "menuKey": "Einstellungen:",
+      "pause": "Bei Fokusverlust pausieren:",
+      "close": "Schließen"
+    },
+    "popup": {
+      "ported": "Slope Plus, portiert von lonfro",
+      "github": "GitHub-Repository",
+      "old": "Altes Slope Mobile",
+      "press": "Drücke",
+      "forOptions": "für Optionen"
+    }
+  }
+}

@@ -138,6 +138,7 @@
         
       });
     </script>
+    <script src="Patches/i18n.js"></script>
   </head>
   <body>
     <button id="keyboard-btn" class="keyboard-btn" type="button" aria-label="Open keyboard">
@@ -146,10 +147,10 @@
     <input id="keyboard-input" class="keyboard-input" type="text" style="position:absolute;opacity:0;pointer-events:none;">
 
     <div id="keybindMenu" class="hidden">
-      <h3>Settings</h3>
+      <h3 data-i18n="root.settings.title">Settings</h3>
       <div class="keybind-row">
         <button id="leftKeyBtn" class="keybind-btn">
-          <span class="keybind-label" id="leftKeyValueLabel">Left:</span>
+          <span class="keybind-label" id="leftKeyValueLabel" data-i18n="root.settings.left">Left:</span>
           <span class="keybind-value-box" id="leftKeyValueBox">
             <span class="keybind-value" id="leftKeyValue">A</span>
           </span>
@@ -157,7 +158,7 @@
       </div>
       <div class="keybind-row">
         <button id="rightKeyBtn" class="keybind-btn">
-          <span class="keybind-label" id="rightKeyValueLabel">Right:</span>
+          <span class="keybind-label" id="rightKeyValueLabel" data-i18n="root.settings.right">Right:</span>
           <span class="keybind-value-box" id="rightKeyValueBox">
             <span class="keybind-value" id="rightKeyValue">D</span>
           </span>
@@ -165,7 +166,7 @@
       </div>
       <div class="keybind-row">
         <button id="hideKeyBtn" class="keybind-btn">
-          <span class="keybind-label" id="hideKeyValueLabel">Hide game:</span>
+          <span class="keybind-label" id="hideKeyValueLabel" data-i18n="root.settings.hide">Hide game:</span>
           <span class="keybind-value-box" id="hideKeyValueBox">
             <span class="keybind-value" id="hideKeyValue">\</span>
           </span>
@@ -174,7 +175,7 @@
 
       <div class="keybind-row">
         <button id="keybindMenuKeyBtn" class="keybind-btn">
-          <span class="keybind-label" id="keybindMenuKeyValueLabel">Settings:</span>
+          <span class="keybind-label" id="keybindMenuKeyValueLabel" data-i18n="root.settings.menuKey">Settings:</span>
           <span class="keybind-value-box" id="keybindMenuKeyValueBox">
             <span class="keybind-value" id="keybindMenuKeyValue">ShiftRight</span>
           </span>
@@ -183,24 +184,22 @@
 
       <div class="keybind-row">
         <button id="freezeGameBtn" class="keybind-btn">
-          <span class="keybind-label" id="freezeGameValueLabel">Pause on unfocus:</span>
+          <span class="keybind-label" id="freezeGameValueLabel" data-i18n="root.settings.pause">Pause on unfocus:</span>
           <span class="toggle-box" id="freezeGameValueBox">
             <span class="toggle-slider" id="freezeGameValue">O</span>
           </span>
         </button>
       </div>
 
-      <button id="closeMenuBtn" class="close-btn">
-        Close
-      </button>
+      <button id="closeMenuBtn" class="close-btn" data-i18n="root.settings.close">Close</button>
   </div>
     <div id="popup" class="hidden">
-        <span id="bold">Slope Plus, ported by lonfro</span>
+        <span id="bold" data-i18n="root.popup.ported">Slope Plus, ported by lonfro</span>
         <a href="https://github.com/lonfro/SlopePlusWeb" target="_blank">
-            GitHub Repo
+            <span data-i18n="root.popup.github">GitHub Repo</span>
         </a>
         <a href="https://lonfro.github.io/slopemobile">
-            Old Slope Mobile
+            <span data-i18n="root.popup.old">Old Slope Mobile</span>
         </a>
         <p id="dynamicOptions"></p>
     </div>
@@ -219,8 +218,9 @@
         }
         
         dynamicOptions.innerHTML = `
-          <p>Press ${optionKey} for options</p>
+          <span data-i18n="root.popup.press">Press</span> ${optionKey} <span data-i18n="root.popup.forOptions">for options</span>
         `;
+        if (window.applyI18n) window.applyI18n();
       });
     </script>
     <div class="webgl-content">
