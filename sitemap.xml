@@ -2,16 +2,24 @@
 <urlset
       xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xhtml="http://www.w3.org/1999/xhtml"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 <url>
   <loc>https://bbcd.me/</loc>
-  <lastmod>2025-07-31T01:54:48+00:00</lastmod>
+  <lastmod>2025-10-31T00:00:00+00:00</lastmod>
   <priority>0.5</priority>
 </url>
 <url>
   <loc>https://bbcd.me/home/</loc>
-  <lastmod>2025-07-31T08:19:23+00:00</lastmod>
+  <lastmod>2025-10-31T00:00:00+00:00</lastmod>
+  <!-- Language alternates -->
+  <xhtml:link rel="alternate" hreflang="en" href="https://bbcd.me/home/?lang=en"/>
+  <xhtml:link rel="alternate" hreflang="zh-CN" href="https://bbcd.me/home/?lang=zh-CN"/>
+  <xhtml:link rel="alternate" hreflang="ja" href="https://bbcd.me/home/?lang=ja"/>
+  <xhtml:link rel="alternate" hreflang="de" href="https://bbcd.me/home/?lang=de"/>
+  <xhtml:link rel="alternate" hreflang="es" href="https://bbcd.me/home/?lang=es"/>
+  <xhtml:link rel="alternate" hreflang="x-default" href="https://bbcd.me/home/"/>
   <priority>1</priority>
 </url>
 </urlset>
